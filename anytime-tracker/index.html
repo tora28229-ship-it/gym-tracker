@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ANYTIME 店舗トラッカー</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-logo">
+        <span class="brand-badge">AF</span>
+        <h1>ANYTIME <span>TRACKER</span></h1>
+      </div>
+      <div class="header-sub" id="today-date-label"></div>
+    </header>
+
+    <!-- Selected Date Check-in Section -->
+    <section class="card checkin-card">
+      <div class="checkin-header">
+        <div>
+          <span class="section-tag" id="selected-date-badge">TODAY</span>
+          <h2 id="selected-date-title">今日のチェックイン</h2>
+        </div>
+        <button id="back-to-today-btn" class="text-btn hidden">今日に戻る</button>
+      </div>
+      <p class="checkin-hint">訪れた店舗をタップして記録（もう一度タップで取消）</p>
+
+      <div class="store-buttons" id="store-buttons">
+        <button class="store-btn" data-store="nagamineminami">
+          <span class="store-dot dot-nagamine"></span>
+          <span class="store-name">長嶺南</span>
+          <span class="store-check">✓</span>
+        </button>
+        <button class="store-btn" data-store="kurokami">
+          <span class="store-dot dot-kurokami"></span>
+          <span class="store-name">黒髪</span>
+          <span class="store-check">✓</span>
+        </button>
+        <button class="store-btn" data-store="higashimachi">
+          <span class="store-dot dot-higashi"></span>
+          <span class="store-name">東町</span>
+          <span class="store-check">✓</span>
+        </button>
+        <button class="store-btn" data-store="shinoe">
+          <span class="store-dot dot-shinoe"></span>
+          <span class="store-name">新大江</span>
+          <span class="store-check">✓</span>
+        </button>
+        <button class="store-btn" data-store="hakata3">
+          <span class="store-dot dot-hakata3"></span>
+          <span class="store-name">博多三丁目</span>
+          <span class="store-check">✓</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Past 30 Days Stats Section -->
+    <section class="card stats-card">
+      <div class="stats-header">
+        <div>
+          <h2>過去30日間の店舗割合</h2>
+          <p class="stats-period" id="stats-period-label"></p>
+        </div>
+        <div class="total-visits-box">
+          <span class="total-label">来店日数</span>
+          <span class="total-count"><strong id="total-visits-count">0</strong><small>/30日</small></span>
+        </div>
+      </div>
+
+      <!-- Visual Donut & Stacked Bar -->
+      <div class="chart-area">
+        <div class="donut-wrapper">
+          <div class="donut-chart" id="donut-chart">
+            <div class="donut-hole">
+              <span class="donut-main-label" id="top-store-label">記録なし</span>
+              <span class="donut-sub-label" id="top-store-pct">-</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="breakdown-list" id="breakdown-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Stacked horizontal bar -->
+      <div class="stacked-bar-container" id="stacked-bar">
+        <div class="stacked-empty">まだ過去30日の記録がありません</div>
+      </div>
+    </section>
+
+    <!-- Calendar Section -->
+    <section class="card calendar-card">
+      <div class="calendar-header">
+        <div>
+          <h2>カレンダー履歴・修正</h2>
+          <p class="calendar-hint">日付をタップして過去の記録を追加・変更できます</p>
+        </div>
+        <div class="month-nav">
+          <button id="prev-month-btn" class="nav-btn" aria-label="前月">‹</button>
+          <span id="current-month-label" class="month-label"></span>
+          <button id="next-month-btn" class="nav-btn" aria-label="翌月">›</button>
+        </div>
+      </div>
+
+      <div class="calendar-weekdays">
+        <span class="sun">日</span>
+        <span>月</span>
+        <span>火</span>
+        <span>水</span>
+        <span>木</span>
+        <span>金</span>
+        <span class="sat">土</span>
+      </div>
+      <div class="calendar-grid" id="calendar-grid">
+        <!-- Populated by JS -->
+      </div>
+
+      <div class="calendar-legend">
+        <span class="legend-item"><i class="store-dot dot-nagamine"></i>長嶺南</span>
+        <span class="legend-item"><i class="store-dot dot-kurokami"></i>黒髪</span>
+        <span class="legend-item"><i class="store-dot dot-higashi"></i>東町</span>
+        <span class="legend-item"><i class="store-dot dot-shinoe"></i>新大江</span>
+        <span class="legend-item"><i class="store-dot dot-hakata3"></i>博多三丁目</span>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
