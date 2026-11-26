@@ -2,338 +2,170 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ANYTIME 所属店舗 自動移籍判定・シミュレーター</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ANYTIME 店舗トラッカー</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Top Brand Header -->
-  <header class="app-header">
-    <div class="header-inner">
-      <div class="brand-group">
-        <div class="brand-logo" aria-hidden="true">AF</div>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-logo">
+        <span class="brand-badge">AF</span>
+        <h1>ANYTIME <span>TRACKER</span></h1>
+      </div>
+      <div class="home-selector-wrap">
+        <label for="home-store-select" class="home-label">所属</label>
+        <select id="home-store-select" class="home-select" aria-label="所属店舗">
+          <option value="nagamineminami">長嶺南</option>
+          <option value="kurokami">黒髪</option>
+          <option value="higashimachi">東町</option>
+          <option value="hakata3">博多三丁目</option>
+          <option value="shinoe">新大江</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- Compact Transfer Status Banner -->
+    <section id="transfer-status-card" class="status-banner status-safe" aria-live="polite">
+      <div class="status-left">
+        <span id="status-icon" class="status-icon">✅</span>
+        <div class="status-texts">
+          <div id="status-title" class="status-title">安全（所属維持）</div>
+          <div id="status-sub" class="status-sub">移籍対象外</div>
+        </div>
+      </div>
+      <span id="status-action-pill" class="status-action-pill hidden"></span>
+    </section>
+
+    <!-- 1-Tap Check-in Card -->
+    <section class="card checkin-card">
+      <div class="checkin-header">
         <div>
-          <h1 class="brand-title">ANYTIME <span>移籍判定シミュレーター</span></h1>
-          <p class="brand-subtitle">ローリング30日×2・3ブロック自動判定＆逆算ナビ</p>
+          <span class="section-tag" id="selected-date-badge">TODAY</span>
+          <h2 id="selected-date-title">今日の来店記録</h2>
         </div>
+        <button type="button" id="back-to-today-btn" class="text-btn hidden">今日に戻る</button>
       </div>
-      <div class="header-pills">
-        <div class="header-pill home-pill" id="header-home-pill" title="現在の所属店舗">
-          <span class="pill-label">所属</span>
-          <strong id="header-home-name">-</strong>
-        </div>
-        <div class="header-pill date-pill" id="header-date-pill" title="現在の判定基準日">
-          <span class="pill-label">基準日</span>
-          <strong id="header-ref-date">-</strong>
-        </div>
-      </div>
-    </div>
-  </header>
 
-  <!-- Dummy Data Active Banner (Shown only when test dummy data is loaded) -->
-  <div id="dummy-active-banner" class="dummy-banner hidden">
-    <div class="dummy-banner-inner">
-      <div class="dummy-banner-text">
-        <span class="dummy-badge">TEST MODE</span>
-        <span id="dummy-mode-label">お試しダミーデータを表示中</span>
+      <div class="store-buttons" id="store-buttons">
+        <button type="button" class="store-btn" data-store="nagamineminami">
+          <span class="store-dot dot-nagamine"></span>
+          <span class="store-name">長嶺南</span>
+          <span class="home-mini-tag hidden">所属</span>
+          <span class="store-check">✓</span>
+        </button>
+        <button type="button" class="store-btn" data-store="kurokami">
+          <span class="store-dot dot-kurokami"></span>
+          <span class="store-name">黒髪</span>
+          <span class="home-mini-tag hidden">所属</span>
+          <span class="store-check">✓</span>
+        </button>
+        <button type="button" class="store-btn" data-store="higashimachi">
+          <span class="store-dot dot-higashi"></span>
+          <span class="store-name">東町</span>
+          <span class="home-mini-tag hidden">所属</span>
+          <span class="store-check">✓</span>
+        </button>
+        <button type="button" class="store-btn" data-store="hakata3">
+          <span class="store-dot dot-hakata3"></span>
+          <span class="store-name">博多三丁目</span>
+          <span class="home-mini-tag hidden">所属</span>
+          <span class="store-check">✓</span>
+        </button>
+        <button type="button" class="store-btn" data-store="shinoe">
+          <span class="store-dot dot-shinoe"></span>
+          <span class="store-name">新大江</span>
+          <span class="home-mini-tag hidden">所属</span>
+          <span class="store-check">✓</span>
+        </button>
       </div>
-      <button type="button" id="restore-real-data-btn" class="btn-restore">
-        元の自分のデータに戻す
-      </button>
-    </div>
+    </section>
+
+    <!-- Stats & Donut Chart Card (with 30-day rolling block tabs) -->
+    <section class="card stats-card">
+      <div class="stats-top-row">
+        <div>
+          <h2 id="stats-heading">直近30日間の店舗割合</h2>
+          <p class="stats-period" id="stats-period-label"></p>
+        </div>
+        <div class="total-visits-box">
+          <span class="total-label">来店</span>
+          <span class="total-count"><strong id="total-visits-count">0</strong><small>回</small></span>
+        </div>
+      </div>
+
+      <!-- 30-Day Rolling Block Switcher -->
+      <div class="block-tabs" role="tablist">
+        <button type="button" class="block-tab active" data-block="0" role="tab">
+          <span class="block-tab-dot" id="tab-dot-0"></span>直近30日
+        </button>
+        <button type="button" class="block-tab" data-block="1" role="tab">
+          <span class="block-tab-dot" id="tab-dot-1"></span>30〜59日前
+        </button>
+        <button type="button" class="block-tab" data-block="2" role="tab">
+          <span class="block-tab-dot" id="tab-dot-2"></span>60〜89日前
+        </button>
+      </div>
+
+      <!-- Donut & Breakdown -->
+      <div class="chart-area">
+        <div class="donut-wrapper">
+          <div class="donut-chart" id="donut-chart">
+            <div class="donut-hole">
+              <span class="donut-main-label" id="top-store-label">記録なし</span>
+              <span class="donut-sub-label" id="top-store-pct">0%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="breakdown-list" id="breakdown-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Stacked horizontal bar with 51% line -->
+      <div class="stacked-wrap">
+        <div class="line-51" title="51%"><span>51%</span></div>
+        <div class="stacked-bar-container" id="stacked-bar">
+          <div class="stacked-empty">記録なし</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Calendar Card -->
+    <section class="card calendar-card">
+      <div class="calendar-header">
+        <h2>カレンダー</h2>
+        <div class="month-nav">
+          <button type="button" id="prev-month-btn" class="nav-btn" aria-label="前月">‹</button>
+          <span id="current-month-label" class="month-label"></span>
+          <button type="button" id="next-month-btn" class="nav-btn" aria-label="翌月">›</button>
+        </div>
+      </div>
+
+      <div class="calendar-weekdays">
+        <span class="sun">日</span>
+        <span>月</span>
+        <span>火</span>
+        <span>水</span>
+        <span>木</span>
+        <span>金</span>
+        <span class="sat">土</span>
+      </div>
+      <div class="calendar-grid" id="calendar-grid">
+        <!-- Populated by JS -->
+      </div>
+
+      <div class="calendar-legend">
+        <span class="legend-item"><i class="store-dot dot-nagamine"></i>長嶺南</span>
+        <span class="legend-item"><i class="store-dot dot-kurokami"></i>黒髪</span>
+        <span class="legend-item"><i class="store-dot dot-higashi"></i>東町</span>
+        <span class="legend-item"><i class="store-dot dot-hakata3"></i>博多三丁目</span>
+        <span class="legend-item"><i class="store-dot dot-shinoe"></i>新大江</span>
+      </div>
+    </section>
   </div>
-
-  <main class="main-container">
-    <!-- Quick Reference Date & Dummy Data Simulator Bar -->
-    <section class="sim-control-bar card">
-      <div class="sim-bar-grid">
-        <!-- Reference Date Control -->
-        <div class="sim-date-box">
-          <div class="sim-box-header">
-            <label for="ref-date-input" class="sim-label">
-              📅 判定基準日（未来日にして履歴の押し出し確認も可能）
-            </label>
-            <span id="ref-date-diff-badge" class="diff-badge hidden">今日</span>
-          </div>
-          <div class="date-stepper">
-            <button type="button" class="step-btn" data-step="-7" title="7日前へ">-7日</button>
-            <button type="button" class="step-btn" data-step="-1" title="1日前へ">◀ -1日</button>
-            <input type="date" id="ref-date-input" class="date-input">
-            <button type="button" class="step-btn" data-step="1" title="1日後へ">+1日 ▶</button>
-            <button type="button" class="step-btn" data-step="7" title="7日後へ">+7日</button>
-            <button type="button" id="reset-ref-today-btn" class="step-btn step-today">今日</button>
-          </div>
-        </div>
-
-        <!-- Dummy Preset Loader -->
-        <div class="sim-dummy-box">
-          <div class="sim-box-header">
-            <span class="sim-label">🧪 お試しダミーデータ読込（ワンクリック検証）</span>
-          </div>
-          <div class="dummy-btn-group">
-            <button type="button" class="dummy-btn danger" data-preset="condA">
-              🚨 移籍成立（条件A: 60日）
-            </button>
-            <button type="button" class="dummy-btn danger" data-preset="condB">
-              🚨 移籍成立（条件B: 90日100%）
-            </button>
-            <button type="button" class="dummy-btn warning" data-preset="reachUrgent">
-              ⚠️ リーチ（あと1回で成立）
-            </button>
-            <button type="button" class="dummy-btn warning" data-preset="reachBlock1">
-              ⚠️ リーチ（直近30日達成中）
-            </button>
-            <button type="button" class="dummy-btn safe" data-preset="safe">
-              ✅ 安全パターン
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==========================================
-         SECTION 1: JUDGMENT RESULT DASHBOARD
-         ========================================== -->
-    <section class="dashboard-section" aria-label="判定結果ダッシュボード">
-      <!-- Overall Status Hero Card -->
-      <div id="overall-status-card" class="status-hero status-safe">
-        <div class="status-hero-top">
-          <div class="status-icon-wrap" id="status-icon-wrap">✅</div>
-          <div class="status-headline-group">
-            <div class="status-meta-row">
-              <span class="status-level-badge" id="status-level-badge">移籍対象外（安全）</span>
-              <span class="status-window-label" id="status-window-label">基準日起点ローリング判定</span>
-            </div>
-            <h2 class="status-main-title" id="status-main-title">移籍対象外（安全）</h2>
-            <p class="status-description" id="status-description">
-              現在の来店履歴では、自動移籍の条件を満たしている他店舗はありません。
-            </p>
-          </div>
-        </div>
-
-        <!-- Triggered / Monitored Store Summary Pills -->
-        <div id="status-store-pills" class="status-store-pills"></div>
-      </div>
-
-      <!-- Action Advice (Reverse Calculation) Cards -->
-      <div class="advice-grid">
-        <!-- Avoid Transfer Card -->
-        <div class="card advice-card advice-avoid">
-          <div class="advice-card-header">
-            <span class="advice-icon">🛡️</span>
-            <div>
-              <h3>移籍を【回避】するための目安</h3>
-              <p class="advice-sub">現在の所属店舗を維持したい場合の逆算アドバイス</p>
-            </div>
-          </div>
-          <div id="advice-avoid-body" class="advice-body">
-            <!-- Populated by JS -->
-          </div>
-        </div>
-
-        <!-- Achieve Transfer Card -->
-        <div class="card advice-card advice-target">
-          <div class="advice-card-header">
-            <span class="advice-icon">🎯</span>
-            <div class="advice-header-flex">
-              <div>
-                <h3>移籍を【成立】させるための目安</h3>
-                <p class="advice-sub">希望の他店舗へ移籍したい場合の逆算アドバイス</p>
-              </div>
-              <select id="target-store-select" class="compact-select" aria-label="移籍目標店舗を選択"></select>
-            </div>
-          </div>
-          <div id="advice-target-body" class="advice-body">
-            <!-- Populated by JS -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Rolling 3 Blocks Detailed Breakdown -->
-      <div class="card blocks-section-card">
-        <div class="section-header-row">
-          <div>
-            <h2 class="section-title">📊 30日ブロック別の詳細内訳（ローリング集計）</h2>
-            <p class="section-desc">
-              条件A：直近2ブロック連続で「総計4回以上 かつ 特定他店51%以上」 ／ 条件B：3ブロック連続で「1回以上 かつ 特定他店100%」
-            </p>
-          </div>
-        </div>
-
-        <div id="blocks-container" class="blocks-grid">
-          <!-- Block 1, 2, 3 rendered by JS -->
-        </div>
-      </div>
-    </section>
-
-    <!-- ==========================================
-         SECTION 2: VISIT ENTRY & HISTORY MANAGEMENT
-         ========================================== -->
-    <div class="two-col-layout">
-      <!-- Left Column: Quick Check-in + Basic Settings -->
-      <div class="left-col">
-        <!-- Quick Check-in Card -->
-        <section class="card checkin-section-card" aria-label="来店記録の入力">
-          <div class="section-header-row">
-            <div>
-              <h2 class="section-title">⚡ 来店記録を1タップ追加</h2>
-              <p class="section-desc">日付を選んで利用店舗をタップすると即座に記録されます</p>
-            </div>
-          </div>
-
-          <!-- Visit Date Picker -->
-          <div class="checkin-date-bar">
-            <div class="checkin-date-left">
-              <label for="visit-date-input" class="field-label">利用日</label>
-              <input type="date" id="visit-date-input" class="date-input">
-            </div>
-            <div class="checkin-quick-dates">
-              <button type="button" id="visit-today-btn" class="chip-btn active">今日</button>
-              <button type="button" id="visit-yesterday-btn" class="chip-btn">昨日</button>
-            </div>
-          </div>
-
-          <!-- Same-day Overwrite Mode Toggle -->
-          <label class="mode-toggle-row" for="overwrite-same-day-toggle">
-            <input type="checkbox" id="overwrite-same-day-toggle">
-            <span class="toggle-text">同じ日の記録は上書きする（1日1回モード・再タップで取消）</span>
-          </label>
-
-          <!-- 1-Tap Store Buttons -->
-          <div id="checkin-store-buttons" class="store-tap-grid">
-            <!-- Populated by JS -->
-          </div>
-
-          <!-- Selected Date Existing Visits Preview -->
-          <div id="selected-date-records" class="selected-date-records">
-            <!-- Populated by JS -->
-          </div>
-        </section>
-
-        <!-- Basic Settings Card -->
-        <section class="card settings-section-card" aria-label="基本設定">
-          <div class="section-header-row">
-            <div>
-              <h2 class="section-title">⚙️ 基本設定（所属店舗・店舗プリセット）</h2>
-              <p class="section-desc">現在の所属店舗と、よく利用する他店舗を登録・変更できます</p>
-            </div>
-          </div>
-
-          <!-- Current Home Store Selector -->
-          <div class="setting-block">
-            <label for="home-store-select" class="field-label">🏠 現在の所属店舗</label>
-            <select id="home-store-select" class="full-select"></select>
-            <p class="field-help">※ 所属店舗以外の「特定の1店舗」ごとに51%以上 / 100%の移籍判定が行われます。</p>
-          </div>
-
-          <!-- Preset Stores Management -->
-          <div class="setting-block">
-            <label for="new-store-name-input" class="field-label">📍 登録店舗リスト（プリセット追加・削除）</label>
-            <form id="add-store-form" class="add-store-form">
-              <input
-                type="text"
-                id="new-store-name-input"
-                class="text-input"
-                placeholder="例：天神、薬院、熊本駅前..."
-                maxlength="20"
-              >
-              <button type="submit" class="btn-primary">＋ 追加</button>
-            </form>
-            <div id="preset-stores-list" class="preset-stores-list">
-              <!-- Populated by JS -->
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <!-- Right Column: Calendar & History List -->
-      <div class="right-col">
-        <section class="card history-section-card" aria-label="来店履歴・カレンダー">
-          <div class="history-tabs-header">
-            <div class="tab-buttons" role="tablist">
-              <button type="button" class="tab-btn active" data-tab="calendar" role="tab">
-                📅 カレンダー確認
-              </button>
-              <button type="button" class="tab-btn" data-tab="list" role="tab">
-                📋 履歴一覧 (<span id="total-records-badge">0</span>)
-              </button>
-            </div>
-            <button type="button" id="clear-all-records-btn" class="btn-danger-outline" title="全履歴を削除">
-              全削除
-            </button>
-          </div>
-
-          <!-- TAB 1: Calendar View -->
-          <div id="tab-panel-calendar" class="tab-panel">
-            <div class="cal-toolbar">
-              <p class="cal-hint">日付タップで利用日を選択・記録確認できます（背景色は基準日からのブロック範囲）</p>
-              <div class="month-stepper">
-                <button type="button" id="cal-prev-btn" class="icon-btn" aria-label="前月">‹</button>
-                <strong id="cal-month-title" class="cal-month-title">-</strong>
-                <button type="button" id="cal-next-btn" class="icon-btn" aria-label="翌月">›</button>
-              </div>
-            </div>
-
-            <div class="cal-block-legend">
-              <span class="b-leg b1">■ 直近30日(B1)</span>
-              <span class="b-leg b2">■ 30〜59日前(B2)</span>
-              <span class="b-leg b3">■ 60〜89日前(B3)</span>
-            </div>
-
-            <div class="cal-weekdays">
-              <span class="sun">日</span>
-              <span>月</span>
-              <span>火</span>
-              <span>水</span>
-              <span>木</span>
-              <span>金</span>
-              <span class="sat">土</span>
-            </div>
-
-            <div id="calendar-grid" class="cal-grid">
-              <!-- Populated by JS -->
-            </div>
-
-            <div id="cal-store-legend" class="cal-store-legend">
-              <!-- Populated by JS -->
-            </div>
-          </div>
-
-          <!-- TAB 2: History List View -->
-          <div id="tab-panel-list" class="tab-panel hidden">
-            <div class="list-filter-bar">
-              <select id="history-store-filter" class="compact-select" aria-label="店舗で絞り込み">
-                <option value="all">すべての店舗</option>
-              </select>
-              <select id="history-sort-select" class="compact-select" aria-label="並び順">
-                <option value="desc">新しい順</option>
-                <option value="asc">古い順</option>
-              </select>
-            </div>
-
-            <div id="history-list-container" class="history-list">
-              <!-- Populated by JS -->
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-
-    <!-- Rule Reference Footer -->
-    <footer class="rule-footer card">
-      <h3>📖 自動移籍判定ルール早見表（ローリング方式）</h3>
-      <div class="rule-cols">
-        <div class="rule-box">
-          <strong>条件A（メイン条件：30日間 × 2ブロック連続 ＝ 60日間）</strong>
-          <p>基準日から遡り「直近30日間（0〜29日前）」と「30〜59日前」の<strong>両方のブロック</strong>で、全店合計<strong>4回以上</strong>利用し、かつ<strong>特定の他店舗1店舗の利用割合が51%以上</strong>のとき移籍成立。</p>
-        </div>
-        <div class="rule-box">
-          <strong>条件B（低頻度条件：30日間 × 3ブロック連続 ＝ 90日間）</strong>
-          <p>「直近30日間」「30〜59日前」「60〜89日前」の<strong>3ブロックすべて</strong>で合計<strong>1回以上</strong>利用し、かつ<strong>すべて（100%）同じ特定の他店舗1店舗のみ</strong>を利用したとき移籍成立。</p>
-        </div>
-      </div>
-    </footer>
-  </main>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>
